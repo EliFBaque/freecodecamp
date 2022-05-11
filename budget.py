@@ -80,3 +80,53 @@ class Category:
        else:
            return True
 
+def create_spend_chart(budget_list):
+    all_objects_withdraws = []
+    final_porcentage = int
+    object_withdraw = 0
+    object_deposit = 0
+    # recorrer la lista de objectos y luego sacar los amounts
+    for i in budget_list:
+        # cada objecto de la lista
+        for x in i.ledger:
+            # Entrando a los datos del ledger
+            if x['amount'] < 0:
+                object_withdraw += x['amount']
+            else:
+                object_deposit += x['amount']
+        
+            
+        final_porcentage = (round((object_withdraw * 100 / object_deposit)/10)*10) * -1 # porcentaje de gastos.
+        all_objects_withdraws.append({
+            'porcentage' : final_porcentage,
+        })
+        object_withdraw = 0
+        object_deposit = 0
+    
+            
+    # crear el grafico 
+    
+
+    return print(all_objects_withdraws)
+    # hacer un for y verificar que el primer digito sea un -
+    # rounded = round(number/10)*10 rondea a numero mas cerca del 0 osea 10 20 30 etc
+    # usar get balance y sumarle lo del withdraw para sacar el % de gastos
+    
+objeto_uno = Category('Food')
+objeto_dos = Category('Transport')
+objeto_tres = Category('Entertainment')
+
+objeto_uno.deposit(1005, 'Food')
+
+objeto_uno.withdraw(100, 'Food')
+
+
+objeto_dos.deposit(1500, 'Food')
+objeto_dos.withdraw(1000, 'Food')
+
+objeto_tres.deposit(2000, 'Food')
+objeto_tres.withdraw(400, 'Food')
+
+create_spend_chart([objeto_uno, objeto_dos, objeto_tres])
+
+
