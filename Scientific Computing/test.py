@@ -81,10 +81,88 @@ class Category:
            return True
 
 def create_spend_chart(budget_list):
+    # Declaracion de variables
+    withdraws_list = []
+    withdraw , deposit, test_two, contador, a, b, testing = 0, 0, 0, 0, 0, 0, 0
+    string_porcentage = 100
+    porcentage = int
+    ticket, generator, category_generator, test = '', '', '', ''
+    # Creacion de Gasto total
+    for i in budget_list:
+        for x in i.ledger:
+            if x['amount'] < 0:
+                withdraw += x['amount']
+            else:
+                deposit += x['amount']
+        # Redondeado a 0 10 20 30 etc       
+        porcentage = (round((withdraw * 100 / deposit)/10)*10) * -1
+        # Lista con nombre y % de lo gastado
+        withdraws_list.append({
+            'category' : i.category_name,
+            'porcentage' : porcentage,
+        })
+        # Reset the variables
+        withdraw, deposit = 0, 0
+    # Generando el ticket final
+    while string_porcentage >= 0:
+        for i in withdraws_list:
+            # Columna de %
+            if string_porcentage <= i['porcentage']:
+                generator += ' o '
+            else:
+                generator += '   '
+        ticket += f'{string_porcentage}|{generator}\n'
+        string_porcentage -= 10
+        
+        if string_porcentage == 0:
+            test_two = len(generator)
+            test = test.rjust(test_two, '-') + '\n'
+                # Which string is larger 
+            for i in range(0, len(withdraws_list)):
+                if i == 0:
+                    testing = len(withdraws_list[i]['category'])
+                if testing < len(withdraws_list[i]['category']):
+                    testing = len(withdraws_list[i]['category'])
+                else:
+                    testing = testing
+        generator = ''
+    while testing:
+        for i in withdraws_list:
+            try:
+                category_generator += f" {i['category'][contador]} "
+            except:
+                category_generator += '   '   
+        category_generator += '\n'    
+        contador += 1        
+        testing-= 1           
+         
+        
     
+    ticket += test
+    ticket += category_generator
     
+
     
-    
-    
-    
+    print(ticket)
     return 'Spend Chart'
+
+objeto_uno = Category('Food')
+objeto_dos = Category('Transport')
+objeto_tres = Category('Entertainment')
+
+objeto_uno.deposit(1005, 'Food')
+
+objeto_uno.withdraw(100, 'Food')
+
+
+objeto_dos.deposit(1500, 'Food')
+objeto_dos.withdraw(1000, 'Food')
+
+objeto_tres.deposit(2000, 'Food')
+objeto_tres.withdraw(400, 'Food')
+
+create_spend_chart([objeto_uno, objeto_dos, objeto_tres])
+
+# Falta organizar el codigo mas limpio.
+# Ademas de que el codigo sea mas legible.
+# Y que quede bien el spend chart

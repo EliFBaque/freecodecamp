@@ -82,9 +82,12 @@ class Category:
 
 def create_spend_chart(budget_list):
     all_objects_withdraws = []
+    string_porcentage = 100
     final_porcentage = int
     object_withdraw = 0
     object_deposit = 0
+    category_generator = ''
+    contador = 0
     # recorrer la lista de objectos y luego sacar los amounts
     for i in budget_list:
         # cada objecto de la lista
@@ -98,10 +101,34 @@ def create_spend_chart(budget_list):
             
         final_porcentage = (round((object_withdraw * 100 / object_deposit)/10)*10) * -1 # porcentaje de gastos.
         all_objects_withdraws.append({
+            'category' : i.category_name,
             'porcentage' : final_porcentage,
         })
         object_withdraw = 0
         object_deposit = 0
+    ticket = ''
+    string_yes = ''
+    while string_porcentage >= 0:
+        for i in all_objects_withdraws:
+            if string_porcentage <= i['porcentage']:
+                string_yes += ' o '
+            else:
+                string_yes += '   '
+            print(string_yes)
+            
+        for i in all_objects_withdraws:
+            for x in i['category']:
+                category_generator += x + '\n'
+            print(category_generator)
+        ticket += f'{string_porcentage}| {string_yes}\n'
+        print(ticket)
+        string_porcentage -= 10 
+        if string_porcentage == 0:
+            # Hacer la linea
+            # Un for para los nombres de cada categoria  
+            return
+        string_yes = ''
+        
     
             
     # crear el grafico 
