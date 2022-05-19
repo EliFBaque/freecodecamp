@@ -1,143 +1,158 @@
 class Category:
-    
+    # Init instance
     def __init__(self, category_name):
         self.category_name = category_name.capitalize()
         self.ledger = []
-        
+    # Print custom instance
     def __str__(self):
-        l, r, final_format = '', '', ''
+        x, y, info, ticket, description = '', '', '', '', ''
+        amount = 0
         center = (30 - len(self.category_name)) / 2
+        x = x.ljust(int(center), '*')
+        y = y.ljust(int(center), '*')
         
-        l = l.ljust(int(center), '*')
-        r = r.rjust(int(center), '*')
-        
-        title = l + self.category_name + r
-        
-        final_format += title + '\n'
-        
+        title = x + self.category_name + y
         for i in self.ledger:
             if len(i['description']) >= 23:
-                description = i['description'][0:23]
+                description = i['description'][0:22]
             else:
-                description = i['description'] 
-            
+                description = i['description']
             if len(str(i['amount'])) >= 7:
-                amount = str(i['amount'])
+                amount = format(i['amount'], '.2f')
                 amount = amount[0:7]
             else:
-                amount = (str(i['amount']))
-                
-            ticket = description + str(amount).rjust(30 - len(description), ' ')
-
-            final_format += ticket + '\n'
-            
-        final_format += 'Total: ' + str(self.get_balance())
-
-        return final_format
-    
-    def deposit(self, amount, description = ""):
+                amount = format(i['amount'], '.2f')
+            text = description + str(amount).rjust(30 - len(description), ' ')
+            info += text + '\n' 
+               
+        balance = 'Total: ' + format(self.get_balance(), '.2f')        
+        ticket = f'{title}\n{info}{balance}'   
+        return ticket
+    # deposit method with amount and description
+    def deposit(self, amount, description = ''):
         deposit_info = {
-            'amount' : round(amount,2),
+            'amount' : amount,
             'description' : description,
-        }
-        
+            }
         return self.ledger.append(deposit_info)
-    
-    def withdraw(self, amount, description = ""):
-        withdraw_info = amount
-        if not self.check_founds(amount):
+    # Withdraw method , verify if you have enough money for withdraw
+    def withdraw(self, amount, description = ''):
+        if not self.check_funds(amount):
             return False
         else:
-            amount = float('-' + str(withdraw_info))
+            amount = amount * -1
             withdraw_info = {
-                'amount' : round(amount,2),
+                'amount' : amount,
                 'description' : description,
             }
-            self.ledger.append(withdraw_info)
+            self.ledger.append(withdraw_info) 
             return True
-    
+    # Get balance method
     def get_balance(self):
         self.balance = 0
         for i in self.ledger:
             self.balance += i['amount']
-        
-        return round(self.balance, 2)
-    
+            
+        return self.balance
+    # Transfer with verification of funds in object
     def transfer(self, amount, budget_category):
-        a = 'Transfer to ' + budget_category.category_name
-        b = 'Transfer from ' + self.category_name
+        x = 'Transfer to ' + budget_category.category_name
+        y = 'Transfer from ' + self.category_name
         
-        if not self.check_founds(amount) or not budget_category.check_founds(amount):
+        if not self.check_funds(amount):
             return False
         else:
-            self.withdraw(amount, a)
-            budget_category.deposit(amount, b)
+            self.withdraw(amount, x)
+            budget_category.deposit(amount, y)
             return True
-
-    def check_founds(self, amount):
-       if amount > self.get_balance():
-           return False
-       else:
-           return True
-
+    # Check funds method
+    def check_funds(self, amount):
+        if amount > self.get_balance():
+            return False
+        else:
+            return True
+# Category Full OKEY       
+        
 def create_spend_chart(budget_list):
-    all_objects_withdraws = []
+    # Stating the variables
+    withdraws_list = []
+    withdraw , deposit, contador, names = 0, 0, 0, 0
     string_porcentage = 100
-    final_porcentage = int
-    object_withdraw = 0
-    object_deposit = 0
-    category_generator = ''
-    contador = 0
-    # recorrer la lista de objectos y luego sacar los amounts
+    porcentage = int
+    ticket, column_numbers, columns_names, line, final_name  = '', '', '', '', ''
+    
     for i in budget_list:
-        # cada objecto de la lista
+        # Dinero total de cada categoria
         for x in i.ledger:
-            # Entrando a los datos del ledger
             if x['amount'] < 0:
-                object_withdraw += x['amount']
+                withdraw += x['amount']
             else:
-                object_deposit += x['amount']
-        
-            
-        final_porcentage = (round((object_withdraw * 100 / object_deposit)/10)*10) * -1 # porcentaje de gastos.
-        all_objects_withdraws.append({
+                deposit += x['amount']
+        # Redondeando
+        porcentage = (round((withdraw * 100 / deposit) / 10 ) * 10) * -1
+        # Lista con nombre y % de lo gastado
+        withdraws_list.append({
             'category' : i.category_name,
-            'porcentage' : final_porcentage,
-        })
-        object_withdraw = 0
-        object_deposit = 0
-    ticket = ''
-    string_yes = ''
-    while string_porcentage >= 0:
-        for i in all_objects_withdraws:
-            if string_porcentage <= i['porcentage']:
-                string_yes += ' o '
-            else:
-                string_yes += '   '
-            print(string_yes)
-            
-        for i in all_objects_withdraws:
-            for x in i['category']:
-                category_generator += x + '\n'
-            print(category_generator)
-        ticket += f'{string_porcentage}| {string_yes}\n'
-        print(ticket)
-        string_porcentage -= 10 
-        if string_porcentage == 0:
-            # Hacer la linea
-            # Un for para los nombres de cada categoria  
-            return
-        string_yes = ''
+            'porcentage' : porcentage,
+        })    
         
+        # Reset the values
+        withdraw, deposit = 0, 0
     
+    # Generando Ticket
+    while string_porcentage >= 0:
+        if len(str(string_porcentage)) == 3:
+            space = ''
+        elif len(str(string_porcentage)) == 2:
+            space = ' '
+        else:
+            space = '  '
+        
+        # Recorriendo withdraws_list
+        for i in withdraws_list:
+            # Columna numerica
+            if string_porcentage <= i['porcentage']:
+                column_numbers += ' o '
+            else:
+                column_numbers += '   '
+        # Formateando el ticket
+        ticket += f'{space}{string_porcentage}|{column_numbers}\n'
+        string_porcentage -= 10
+        # Generando la linea de -
+        if string_porcentage == 0:
+            line_space = len(column_numbers)
+            line = '    ' + line.rjust(line_space, '-') + '\n'
             
-    # crear el grafico 
+            # Which string is larger
+            for i in range(0, len(withdraws_list)):
+                if i == 0:
+                    names = len(withdraws_list[i]['category'])
+                if names < len(withdraws_list[i]['category']):
+                    names = len(withdraws_list[i]['category'])
+                else:
+                    names = names
+                    
+        column_numbers = ''
+    # Creando los nombres en vertical
+    while names:
+        if contador == 0:
+            columns_names += '    '
+        for i in withdraws_list:
+            try:
+                columns_names += f" {i['category'][contador]} "
+            except:
+                columns_names += '   '
+        if names == 1:
+            columns_names += ' '
+        else:
+            columns_names += '\n    '
+        contador += 1
+        names -= 1
+        
+    ticket += line
+    ticket += columns_names
+    return print(ticket)
     
-
-    return print(all_objects_withdraws)
-    # hacer un for y verificar que el primer digito sea un -
-    # rounded = round(number/10)*10 rondea a numero mas cerca del 0 osea 10 20 30 etc
-    # usar get balance y sumarle lo del withdraw para sacar el % de gastos
     
 objeto_uno = Category('Food')
 objeto_dos = Category('Transport')
@@ -157,3 +172,4 @@ objeto_tres.withdraw(400, 'Food')
 create_spend_chart([objeto_uno, objeto_dos, objeto_tres])
 
 
+# Me falta 1 espacio

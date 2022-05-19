@@ -22,10 +22,17 @@ class Category:
                 description = i['description'] 
             
             if len(str(i['amount'])) >= 7:
-                amount = str(i['amount'])
-                amount = amount[0:7]
+                if i['amount'] is int:
+                    amount = str(i['amount']) + '.00'
+                    amount = amount[0:7]
+                else:
+                    amount = str(i['amount'])
+                    amount = amount[0:7]
             else:
-                amount = (str(i['amount']))
+                if i['amount'] is int:
+                    amount = (str(i['amount'])) + '.00'
+                else:
+                    amount = str(i['amount'])
                 
             ticket = description + str(amount).rjust(30 - len(description), ' ')
 
@@ -37,7 +44,7 @@ class Category:
     
     def deposit(self, amount, description = ""):
         deposit_info = {
-            'amount' : round(amount,2),
+            'amount' : amount,
             'description' : description,
         }
         
@@ -81,71 +88,87 @@ class Category:
            return True
 
 def create_spend_chart(budget_list):
-    # Declaracion de variables
+    # Stating the variables
     withdraws_list = []
-    withdraw , deposit, test_two, contador, a, b, testing = 0, 0, 0, 0, 0, 0, 0
+    withdraw , deposit, contador, names = 0, 0, 0, 0
     string_porcentage = 100
     porcentage = int
-    ticket, generator, category_generator, test = '', '', '', ''
-    # Creacion de Gasto total
+    ticket, column_numbers, columns_names, line, final_name  = '', '', '', '', ''
+    
     for i in budget_list:
+        # Dinero total de cada categoria
         for x in i.ledger:
             if x['amount'] < 0:
                 withdraw += x['amount']
             else:
                 deposit += x['amount']
-        # Redondeado a 0 10 20 30 etc       
-        porcentage = (round((withdraw * 100 / deposit)/10)*10) * -1
+        # Redondeando
+        porcentage = (round((withdraw * 100 / deposit) / 10 ) * 10) * -1
         # Lista con nombre y % de lo gastado
         withdraws_list.append({
             'category' : i.category_name,
             'porcentage' : porcentage,
-        })
-        # Reset the variables
-        withdraw, deposit = 0, 0
-    # Generando el ticket final
-    while string_porcentage >= 0:
-        for i in withdraws_list:
-            # Columna de %
-            if string_porcentage <= i['porcentage']:
-                generator += ' o '
-            else:
-                generator += '   '
-        ticket += f'{string_porcentage}|{generator}\n'
-        string_porcentage -= 10
+        })    
         
+        # Reset the values
+        withdraw, deposit = 0, 0
+    
+    # Generando Ticket
+    while string_porcentage >= 0:
+        if len(str(string_porcentage)) == 3:
+            space = ''
+        elif len(str(string_porcentage)) == 2:
+            space = ' '
+        else:
+            space = '  '
+        
+        # Recorriendo withdraws_list
+        for i in withdraws_list:
+            # Columna numerica
+            if string_porcentage <= i['porcentage']:
+                column_numbers += ' o '
+            else:
+                column_numbers += '   '
+        # Formateando el ticket
+        ticket += f'{space}{string_porcentage}|{column_numbers}\n'
+        string_porcentage -= 10
+        # Generando la linea de -
         if string_porcentage == 0:
-            test_two = len(generator)
-            test = test.rjust(test_two, '-') + '\n'
-                # Which string is larger 
+            line_space = len(column_numbers)
+            line = '    ' + line.rjust(line_space, '-') + '\n'
+            
+            # Which string is larger
             for i in range(0, len(withdraws_list)):
                 if i == 0:
-                    testing = len(withdraws_list[i]['category'])
-                if testing < len(withdraws_list[i]['category']):
-                    testing = len(withdraws_list[i]['category'])
+                    names = len(withdraws_list[i]['category'])
+                if names < len(withdraws_list[i]['category']):
+                    names = len(withdraws_list[i]['category'])
                 else:
-                    testing = testing
-        generator = ''
-    while testing:
+                    names = names
+                    
+        column_numbers = ''
+    # Creando los nombres en vertical
+    while names:
+        if contador == 0:
+            columns_names += '    '
         for i in withdraws_list:
             try:
-                category_generator += f" {i['category'][contador]} "
+                columns_names += f" {i['category'][contador]} "
             except:
-                category_generator += '   '   
-        category_generator += '\n'    
-        contador += 1        
-        testing-= 1           
-         
+                columns_names += '   '
+        if names == 1:
+            columns_names += ' '
+        else:
+            columns_names += '\n    '
+        contador += 1
+        names -= 1
         
-    
-    ticket += test
-    ticket += category_generator
-    
+    ticket += line
+    ticket += columns_names
+    return print(ticket)
 
-    
-    print(ticket)
-    return 'Spend Chart'
 
+                    
 objeto_uno = Category('Food')
 objeto_dos = Category('Transport')
 objeto_tres = Category('Entertainment')
@@ -162,7 +185,3 @@ objeto_tres.deposit(2000, 'Food')
 objeto_tres.withdraw(400, 'Food')
 
 create_spend_chart([objeto_uno, objeto_dos, objeto_tres])
-
-# Falta organizar el codigo mas limpio.
-# Ademas de que el codigo sea mas legible.
-# Y que quede bien el spend chart
